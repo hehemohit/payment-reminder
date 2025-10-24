@@ -306,6 +306,269 @@ body {
   margin-top: 16px;
 }
 
+/* Payment Records Styles */
+.payments-list {
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.payments-list h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.payment-item:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.payment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.payment-amount {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.amount-display {
+  color: #2d3748;
+}
+
+.amount-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amount-input {
+  width: 100px;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.amount-input:focus {
+  outline: none;
+  border-color: #ffda03;
+  box-shadow: 0 0 0 2px rgba(255, 218, 3, 0.2);
+}
+
+.amount-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-save, .btn-cancel {
+  padding: 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #38a169;
+}
+
+.btn-cancel {
+  background: #e53e3e;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #c53030;
+}
+
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.payment-status {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.payment-date {
+  font-size: 0.75rem;
+}
+
+.payment-description {
+  font-style: italic;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-edit-amount {
+  padding: 6px;
+  background: #ffda03;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #2d3748;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit-amount:hover {
+  background: #e6c300;
+  transform: translateY(-1px);
+}
+
+/* Final Amount Styles */
+.stat-item.final-amount {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.final-amount-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.final-amount-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.final-amount-input {
+  width: 100px;
+  padding: 4px 8px;
+  border: 1px solid #0ea5e9;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.final-amount-input:focus {
+  outline: none;
+  border-color: #ffda03;
+  box-shadow: 0 0 0 2px rgba(255, 218, 3, 0.2);
+}
+
+.final-amount-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-edit-final {
+  padding: 4px;
+  background: #0ea5e9;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit-final:hover {
+  background: #0284c7;
+  transform: translateY(-1px);
+}
+
+
+.auto-sync-indicator {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.syncing-indicator {
+  font-size: 0.7rem;
+  color: #f59e0b;
+  font-weight: 500;
+  font-style: italic;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Mobile Responsive for Payment Records */
+@media (max-width: 768px) {
+  .payment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .payment-info {
+    width: 100%;
+  }
+  
+  .amount-edit {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .amount-input {
+    width: 120px;
+  }
+  
+  .amount-actions {
+    align-self: flex-start;
+  }
+  
+  .btn-edit-amount {
+    align-self: flex-end;
+  }
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

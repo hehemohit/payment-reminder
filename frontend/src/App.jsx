@@ -32,6 +32,9 @@ function App() {
       ]);
       setClients(clientsRes.data);
       setPayments(paymentsRes.data);
+      
+      // Automatically trigger force sync to ensure all final amounts are up to date
+      await triggerForceSync('all');
     } catch (err) {
       setError('Failed to fetch data. Make sure the backend server is running.');
       console.error('Error fetching data:', err);
@@ -61,6 +64,7 @@ function App() {
       }
       setShowClientForm(false);
       setEditingClient(null);
+      fetchData(); // Refresh to get updated final amounts
     } catch (err) {
       alert('Failed to save client: ' + (err.response?.data?.error || err.message));
     }
@@ -79,19 +83,12 @@ function App() {
 
   const handleSendReminder = async (clientId) => {
     try {
-      // Find the client's pending payments
-      const clientPayments = payments.filter(p => p.client_id === clientId && p.status === 'pending');
-      if (clientPayments.length === 0) {
-        alert('No pending payments found for this client.');
-        return;
-      }
-
-      // Send reminder for the first pending payment
-      const payment = clientPayments[0];
-      const response = await axios.post(`${API_BASE_URL}/email/send-reminder/${payment.id}`);
+      // Send reminder using client ID and final amount
+      const response = await axios.post(`${API_BASE_URL}/email/send-reminder/${clientId}`);
       
       if (response.data.success) {
         alert('Payment reminder sent successfully!');
+        fetchData(); // Refresh all data
       } else {
         alert('Failed to send reminder: ' + response.data.error);
       }
@@ -129,7 +126,13 @@ function App() {
       setShowPaymentForm(false);
       setEditingPayment(null);
       setSelectedClientId(null);
-      fetchData(); // Refresh to update client totals
+      
+      // Automatically trigger force sync for the affected client
+      await triggerForceSync(clientId);
+      
+      // Immediate refresh after payment changes
+      await new Promise(resolve => setTimeout(resolve, 150));
+      await fetchData(); // Refresh to update client totals and final amounts
     } catch (err) {
       alert('Failed to save payment: ' + (err.response?.data?.error || err.message));
     }
@@ -139,11 +142,69 @@ function App() {
     if (!confirm('Are you sure you want to delete this payment?')) return;
     
     try {
+      // Get the client ID before deleting
+      const payment = payments.find(p => p.id === paymentId);
+      const clientId = payment?.client_id;
+      
       await axios.delete(`${API_BASE_URL}/payments/${paymentId}`);
       setPayments(payments.filter(p => p.id !== paymentId));
-      fetchData(); // Refresh to update client totals
+      
+      // Automatically trigger force sync for the affected client
+      if (clientId) {
+        await triggerForceSync(clientId);
+      }
+      
+      // Immediate refresh after payment changes
+      await new Promise(resolve => setTimeout(resolve, 150));
+      await fetchData(); // Refresh to update client totals and final amounts
     } catch (err) {
       alert('Failed to delete payment: ' + (err.response?.data?.error || err.message));
+    }
+  };
+
+  const handleUpdatePayment = async (paymentId, updateData) => {
+    try {
+      // Get the client ID before updating
+      const payment = payments.find(p => p.id === paymentId);
+      const clientId = payment?.client_id;
+      
+      await axios.put(`${API_BASE_URL}/payments/${paymentId}`, updateData);
+      setPayments(payments.map(p => p.id === paymentId ? { ...p, ...updateData } : p));
+      
+      // Automatically trigger force sync for the affected client
+      if (clientId) {
+        await triggerForceSync(clientId);
+      }
+      
+      // Immediate refresh after payment changes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      // Force refresh all data to get updated final amounts
+      await fetchData();
+    } catch (err) {
+      alert('Failed to update payment: ' + (err.response?.data?.error || err.message));
+      throw err;
+    }
+  };
+
+  const handleUpdateFinalAmount = async (clientId, finalAmount) => {
+    try {
+      await axios.put(`${API_BASE_URL}/clients/${clientId}/final-amount`, { final_amount: finalAmount });
+      setClients(clients.map(c => c.id === clientId ? { ...c, final_amount: finalAmount } : c));
+      fetchData(); // Refresh to update all data
+    } catch (err) {
+      alert('Failed to update final amount: ' + (err.response?.data?.error || err.message));
+      throw err;
+    }
+  };
+
+  // Automatically trigger force sync when pending amounts change
+  const triggerForceSync = async (clientId) => {
+    try {
+      console.log(`🔄 Auto-triggering force sync for client ${clientId}`);
+      await axios.post(`${API_BASE_URL}/payments/sync-final-amounts`);
+      console.log(`✅ Force sync completed for client ${clientId}`);
+    } catch (err) {
+      console.error('Force sync failed:', err);
     }
   };
 
@@ -231,10 +292,13 @@ function App() {
             <ClientCard
               key={client.id}
               client={client}
+              payments={payments}
               onSendReminder={handleSendReminder}
               onEdit={handleEditClient}
               onDelete={handleDeleteClient}
               onAddPayment={handleAddPayment}
+              onUpdatePayment={handleUpdatePayment}
+              onUpdateFinalAmount={handleUpdateFinalAmount}
             />
           ))}
         </div>

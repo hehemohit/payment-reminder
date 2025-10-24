@@ -8,7 +8,8 @@ export class Client {
                     c.*,
                     COUNT(p.id) as total_payments,
                     SUM(CASE WHEN p.status = 'pending' THEN p.amount ELSE 0 END) as pending_amount,
-                    SUM(CASE WHEN p.status = 'overdue' THEN p.amount ELSE 0 END) as overdue_amount
+                    SUM(CASE WHEN p.status = 'overdue' THEN p.amount ELSE 0 END) as overdue_amount,
+                    COALESCE(c.final_amount, 0) as final_amount
                 FROM clients c
                 LEFT JOIN payments p ON c.id = p.client_id
                 GROUP BY c.id
@@ -36,8 +37,8 @@ export class Client {
         return new Promise((resolve, reject) => {
             const { name, email, company, phone } = clientData;
             const query = `
-                INSERT INTO clients (name, email, company, phone)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO clients (name, email, company, phone, final_amount)
+                VALUES (?, ?, ?, ?, 0.00)
             `;
             
             db.run(query, [name, email, company, phone], function(err) {
@@ -84,6 +85,21 @@ export class Client {
             db.all(query, [clientId], (err, rows) => {
                 if (err) reject(err);
                 else resolve(rows);
+            });
+        });
+    }
+
+    static async updateFinalAmount(id, finalAmount) {
+        return new Promise((resolve, reject) => {
+            const query = `
+                UPDATE clients 
+                SET final_amount = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `;
+            
+            db.run(query, [finalAmount, id], function(err) {
+                if (err) reject(err);
+                else resolve({ id, final_amount: finalAmount });
             });
         });
     }

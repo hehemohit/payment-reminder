@@ -90,4 +90,20 @@ router.get('/:id/payments', async (req, res) => {
     }
 });
 
+// Update client final amount
+router.put('/:id/final-amount', async (req, res) => {
+    try {
+        const { final_amount } = req.body;
+        
+        if (final_amount === undefined || final_amount < 0) {
+            return res.status(400).json({ error: 'Valid final amount is required' });
+        }
+
+        const result = await Client.updateFinalAmount(req.params.id, final_amount);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
